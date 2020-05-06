@@ -35,7 +35,7 @@ class Hex(pygame.sprite.Sprite):
 
 	def should_draw(self, current_mode):
 		if self.type == 'add':
-			if current_mode == 'edit':
+			if current_mode == 'add-piece':
 				mouse_cords = pygame.mouse.get_pos()
 				return abs(self.x - mouse_cords[0]) < 65 and abs(self.y - mouse_cords[1]) < 70
 			else:
