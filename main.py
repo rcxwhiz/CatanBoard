@@ -36,9 +36,10 @@ def main():
 		new_hex = hex.Hex('add')
 		new_hex.position(position[0], position[1])
 		hexes.add(new_hex)
-	hexes.sprites()[18].cycle_type(True)
+	# make middle hex start as something
+	# hexes.sprites()[18].cycle_type(True)
 
-	buttons_x = 990
+	buttons_x = 990 + 180
 	buttons_y = 70
 
 	buttons = {}
@@ -48,13 +49,18 @@ def main():
 		loop_x += 170
 
 	current_mode = 'view-map'
+	ever_rendered = False
 	while current_mode != 'quit':
 		screen.fill((255, 255, 255))
 
+		to_render = False
+
+		# event handling
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				current_mode = 'quit'
 			if event.type == pygame.MOUSEBUTTONDOWN:
+				to_render = True
 				x, y = event.pos
 
 				for tile in hexes:
@@ -72,23 +78,41 @@ def main():
 				for button_item in buttons.keys():
 					if buttons[button_item].rect.collidepoint(x, y):
 						current_mode = button_item
+			if event.type == pygame.MOUSEMOTION:
+				to_render = True
 
-		for tile in hexes:
-			if tile.should_draw(current_mode):
-				screen.blit(tile.surf, tile.rect)
-				if tile.token != 0:
-					if tile.token == 6 or tile.token == 8:
-						text_surf = game_font.render(str(tile.token), True, (255, 0, 0))
-					else:
-						text_surf = game_font.render(str(tile.token), True, (0, 0, 0))
+		if to_render or not ever_rendered:
+			ever_rendered = True
+			# rendering
+			for tile in hexes:
+				if tile.should_draw(current_mode):
+					screen.blit(tile.surf, tile.rect)
+					if tile.token != 0:
+						if tile.token == 6 or tile.token == 8:
+							text_surf = game_font.render(str(tile.token), True, (255, 0, 0))
+						else:
+							text_surf = game_font.render(str(tile.token), True, (0, 0, 0))
+						text_rect = text_surf.get_rect()
+						text_rect.center = (tile.x, tile.y)
+						pygame.draw.circle(screen, (255, 255, 255), (round(tile.x), round(tile.y)), 35)
+						screen.blit(text_surf, text_rect)
+			# if current_mode == 'view-resources':
+			if True:
+				xy = [1485, 155]
+				for resource in ['brick', 'wood', 'ore', 'sheep', 'wheat']:
+					resource_sum = 0
+					for tile in hexes:
+						if tile.type == resource:
+							resource_sum += tile.get_weight()
+					text_surf = game_font.render(f'{resource}: {resource_sum}', True, (0, 0, 0))
 					text_rect = text_surf.get_rect()
-					text_rect.center = (tile.x, tile.y)
-					pygame.draw.circle(screen, (255, 255, 255), (round(tile.x), round(tile.y)), 35)
+					text_rect.center = xy
 					screen.blit(text_surf, text_rect)
+					xy[1] += 48
 
-		for butt in buttons.values():
-			screen.blit(butt.surf, butt.rect)
-		pygame.display.flip()
+			for butt in buttons.values():
+				screen.blit(butt.surf, butt.rect)
+			pygame.display.flip()
 
 	pygame.quit()
 
